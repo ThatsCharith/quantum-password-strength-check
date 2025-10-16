@@ -11,8 +11,8 @@ export default function PasswordStrengthUI() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const terminalRef = useRef(null);
 
-  // ✅ Correct 5-level mapping (matches backend)
-  const strengthLabels = ["CRITICAL", "WEAK", "FAIR", "GOOD", "PERFECT"];
+  // ✅ 5-level mapping: 0=Critical, 1=Weak, 2=Fair, 3=Strong, 4=Perfect
+  const strengthLabels = ["CRITICAL", "WEAK", "FAIR", "STRONG", "PERFECT"];
 
   // Auto-scroll
   useEffect(() => {
@@ -81,7 +81,7 @@ export default function PasswordStrengthUI() {
         ...prev,
         `$ PASSWORD GENERATED: SUCCESS`,
         `$ LENGTH: ${pass.length}`,
-        `$ STRENGTH: ${pass.length >= 12 ? 'PERFECT' : 'GOOD'}`
+        `$ STRENGTH: ${pass.length >= 12 ? 'PERFECT' : 'STRONG'}`
       ]);
 
     } catch (error) {
@@ -117,7 +117,7 @@ export default function PasswordStrengthUI() {
 
   return (
     <div className="absolute inset-0 bg-black text-green-400 font-mono overflow-hidden">
-      {/* Background - same as before */}
+      {/* Background */}
       <div className="absolute inset-0">
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-green-900/10 to-green-900/20 pointer-events-none"></div>
         <div 

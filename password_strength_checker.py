@@ -73,51 +73,91 @@ class PasswordStrength:
         self.banned_wordlist = (Wordlist(banned_wordlist_path)
             if banned_wordlist_path else None)
         self.min_password_length = 12
+        # New parameter-based mapping
         self.strength_mapping = {
-            0: "Very Weak",
-            1: "Weak",
-            2: "Moderate",
-            3: "Strong",
-            4: "Very Strong"
+            0: "Critical",
+            1: "Critical", 
+            2: "Weak",
+            3: "Fair",
+            4: "Good",
+            5: "Strong",
+            6: "Perfect"
         }
 
     @lru_cache(maxsize=1000)
     def check_password_strength(self, password: str) -> StrengthResult:
-        """Check the strength of a given password."""
-        if len(password) < self.min_password_length:
-            return StrengthResult("Too short", 0, "Password should be at least 12 characters long.")
-
+        """Check the strength of a given password based on 6 parameters."""
+        
+        # Count parameters met
+        params_met = 0
+        missing_params = []
+        
+        # Parameter 1: Has uppercase
+        if re.search(r'[A-Z]', password):
+            params_met += 1
+        else:
+            missing_params.append("uppercase letter")
+        
+        # Parameter 2: Has lowercase
+        if re.search(r'[a-z]', password):
+            params_met += 1
+        else:
+            missing_params.append("lowercase letter")
+        
+        # Parameter 3: Has digit
+        if re.search(r'\d', password):
+            params_met += 1
+        else:
+            missing_params.append("number")
+        
+        # Parameter 4: Has special character
+        if re.search(r'[!@#$%^&*(),.?":{}|<>]', password):
+            params_met += 1
+        else:
+            missing_params.append("special character")
+        
+        # Parameter 5: Length >= 12
+        if len(password) >= self.min_password_length:
+            params_met += 1
+        else:
+            missing_params.append(f"minimum {self.min_password_length} characters")
+        
+        # Parameter 6: Not in weak/banned lists
         if self.weak_wordlist and self.weak_wordlist.is_word_in_list(password):
-            return StrengthResult("Weak", 0, "Password is commonly used and easily guessable.")
-
-        if self.banned_wordlist and self.banned_wordlist.is_word_in_list(password):
-            return StrengthResult("Banned", 0,
-                "This password is not allowed, as it is commonly found in data leaks.")
-
-        password_strength = zxcvbn(password)
-        score = password_strength["score"]
-        strength = self.strength_mapping[score]
-        complexity_issues = []
-        if not re.search(r'[A-Z]', password):
-            complexity_issues.append("uppercase letter")
-        if not re.search(r'[a-z]', password):
-            complexity_issues.append("lowercase letter")
-        if not re.search(r'\d', password):
-            complexity_issues.append("number")
-        if not re.search(r'[!@#$%^&*(),.?":{}|<>]', password):
-            complexity_issues.append("special character")
-
-        if complexity_issues:
-            return StrengthResult("Weak", score,
-                f"Password lacks complexity. Missing: {', '.join(complexity_issues)}.")
-
-        if score >= 3:
-            return StrengthResult(strength, score,
-                f"Password meets all the requirements. Score: {score}/4")
-
-        suggestions = password_strength["feedback"]["suggestions"]
-        return StrengthResult(strength, score,
-            f"Password is {strength.lower()}. Suggestions: {', '.join(suggestions)}")
+            missing_params.append("not a common password")
+        elif self.banned_wordlist and self.banned_wordlist.is_word_in_list(password):
+            missing_params.append("not a banned password")
+        else:
+            params_met += 1
+        
+        # Determine strength based on parameters met
+        strength = self.strength_mapping.get(params_met, "Critical")
+        
+        # Map to 0-4 score for frontend compatibility
+        if params_met <= 1:
+            score = 0  # CRITICAL
+        elif params_met == 2:
+            score = 1  # WEAK
+        elif params_met == 3:
+            score = 2  # FAIR
+        elif params_met == 4:
+            score = 2  # GOOD (still Fair level)
+        elif params_met == 5:
+            score = 3  # STRONG
+        else:  # params_met == 6
+            score = 4  # PERFECT
+        
+        # Build message
+        if params_met == 6:
+            message = f"Perfect! All security requirements met. ({params_met}/6 parameters)"
+        elif params_met >= 5:
+            message = f"Strong password. Missing: {', '.join(missing_params)}. ({params_met}/6 parameters)"
+        elif params_met >= 3:
+            message = f"Fair password. Missing: {', '.join(missing_params)}. ({params_met}/6 parameters)"
+        else:
+            message = f"Weak password. Missing: {', '.join(missing_params)}. ({params_met}/6 parameters)"
+        
+        return StrengthResult(strength, score, message)
 
     def generate_random_password(self, length=16):
         """Generate a random password."""
@@ -126,7 +166,6 @@ class PasswordStrength:
 
     def suggest_improvements(self, password: str) -> str:
         """Suggest improvements for a given password."""
-        result = self.check_password_strength(password)
         suggestions = []
 
         if len(password) < self.min_password_length:
@@ -140,11 +179,19 @@ class PasswordStrength:
             suggestions.append("Add numbers")
         if not re.search(r'[!@#$%^&*(),.?":{}|<>]', password):
             suggestions.append("Add special characters")
+        
+        if self.weak_wordlist and self.weak_wordlist.is_word_in_list(password):
+            suggestions.append("Avoid common passwords")
+        elif self.banned_wordlist and self.banned_wordlist.is_word_in_list(password):
+            suggestions.append("This password is banned due to security breaches")
 
         if not suggestions:
-            suggestions = result.message.split("Suggestions: ")[-1].split(", ")
+            suggestions.append("Your password meets all requirements!")
 
         return "Suggested improvements:\n\n" + "\n".join(f"- {s}" for s in suggestions)
+
+# Rest of the code remains the same...
+# (PasswordStrengthGUI, PasswordStrengthCLI, and main function stay unchanged)
 
 # pylint: disable=R0902
 class PasswordStrengthGUI:
