@@ -1,3 +1,4 @@
-flask>=2.0.0
+werkzeug
 zxcvbn>=4.4.28
 waitress>=2.1.2
+streamlit
