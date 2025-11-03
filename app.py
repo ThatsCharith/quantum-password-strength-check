@@ -1,37 +1,34 @@
-import streamlit as st
+from flask import Flask, request, jsonify
 from password_strength_checker import PasswordStrength
 
+app = Flask(__name__)
 ps = PasswordStrength()
 
-st.title("Quantum Password Strength Checker 🔒")
-
-password = st.text_input("Enter your password:", type="password")
-
-if st.button("Check Strength"):
-    if not password:
-        st.warning("Please enter a password!")
-    else:
+@app.route('/api/check', methods=['POST'])
+def check_password():
+    try:
+        password = request.json['password']
         result = ps.check_password_strength(password)
         suggestions = ps.suggest_improvements(password)
+        # Split suggestions and remove the initial "Suggested improvements:" line
+        suggestion_list = [s.strip("- ") for s in suggestions.split('\n') if s.startswith("- ")]
+        
+        return jsonify({
+            'strength': result.strength,
+            'score': result.score,
+            'message': result.message,
+            'suggestions': suggestion_list
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
 
-        st.subheader("Strength Result:")
-        st.write(f"**Message:** {result.message}")
-        st.write(f"**Score:** {result.score}/5")
+@app.route('/api/generate', methods=['GET'])
+def generate():
+    try:
+        password = ps.generate_random_password()
+        return jsonify({'password': password})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
-        # Suggestions
-        suggestion_list = [
-            s.strip("- ")
-            for s in suggestions.split("\n")
-            if s.startswith("- ")
-        ]
-
-        if suggestion_list:
-            st.subheader("Suggestions to Improve:")
-            for s in suggestion_list:
-                st.write(f"✅ {s}")
-        else:
-            st.success("Your password is very strong!")
-
-if st.button("Generate Strong Password"):
-    generated = ps.generate_random_password()
-    st.success(f"Generated Password: `{generated}`")
+if __name__ == '__main__':
+    app.run(port=5000, debug=True)
