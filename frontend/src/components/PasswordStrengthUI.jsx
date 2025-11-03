@@ -2,6 +2,10 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
+const API_URL = import.meta.env.VITE_API_URL || "";
+
+
+
 export default function PasswordStrengthUI() {
   const [password, setPassword] = useState("");
   const [strength, setStrength] = useState({ score: 0, feedback: [] });
@@ -158,13 +162,14 @@ export default function PasswordStrengthUI() {
         setTerminalLines(prev => [...prev, `⚠ WARNING: Password found in breach database!`]);
       }
       
-      const response = await fetch('/api/check', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password: pwd })
-      });
+      const response = await fetch(`${API_URL}/api/check`, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ password: pwd })
+});
 
-      const data = await response.json();
+const data = await response.json();
+
       
       if (data.error) {
         setTerminalLines(prev => [...prev, `✗ ANALYSIS FAILED: ${data.error}`]);
@@ -199,7 +204,8 @@ export default function PasswordStrengthUI() {
     try {
       setTerminalLines(prev => [...prev, `$ GENERATING QUANTUM-SAFE PASSWORD...`]);
       
-      const response = await fetch('/api/generate');
+      const response = await fetch(`${API_URL}/api/generate`);
+
       const data = await response.json();
 
       if (data.error) {
