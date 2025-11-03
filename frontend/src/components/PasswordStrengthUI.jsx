@@ -179,9 +179,9 @@ export default function PasswordStrengthUI() {
           </div>
         </div>
 
-        <div className="flex-1 flex">
+        <div className="flex-1 flex flex-col md:flex-row">
           {/* Left Panel */}
-          <div className="w-1/2 border-r border-green-600 bg-black/85 p-6 flex flex-col">
+          <div className="w-full md:w-1/2 border-b md:border-r border-green-600 bg-black/85 p-4 md:p-6 flex flex-col">
             {/* Input Section */}
             <div className="mb-6">
               <div className="text-green-600 text-sm font-bold mb-3">PASSWORD ANALYSIS</div>
@@ -194,13 +194,13 @@ export default function PasswordStrengthUI() {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="Enter password..."
-                      className="w-full bg-black border border-green-600 p-2 outline-none text-green-400 font-mono text-sm focus:border-green-400 transition-colors"
+                      className="w-full bg-black border border-green-600 p-3 md:p-2 outline-none text-green-400 font-mono text-sm md:text-base focus:border-green-400 transition-colors"
                       style={{ minWidth: '150px' }}
                     />
                   </div>
                   <button
                     onClick={() => setShowPassword(!showPassword)}
-                    className="text-green-600 hover:text-green-400 px-2 py-1 border border-green-600 hover:border-green-400 transition-colors text-xs"
+                    className="text-green-600 hover:text-green-400 px-3 py-2 md:px-2 md:py-1 border border-green-600 hover:border-green-400 transition-colors text-xs md:text-xs whitespace-nowrap"
                   >
                     {showPassword ? "HIDE" : "SHOW"}
                   </button>
@@ -209,7 +209,7 @@ export default function PasswordStrengthUI() {
                 <button
                   onClick={generateSecurePassword}
                   disabled={isAnalyzing}
-                  className="w-full bg-green-900 hover:bg-green-800 border border-green-600 text-green-400 px-3 py-2 text-sm font-bold transition-all duration-200 hover:border-green-400 disabled:opacity-50"
+                  className="w-full bg-green-900 hover:bg-green-800 border border-green-600 text-green-400 px-3 py-2 md:px-2 md:py-1 text-sm md:text-base font-bold transition-all duration-200 hover:border-green-400 disabled:opacity-50"
                 >
                   {isAnalyzing ? "PROCESSING..." : "$ GENERATE SECURE PASSWORD"}
                 </button>
@@ -222,8 +222,8 @@ export default function PasswordStrengthUI() {
                 <div>
                   <div className="text-green-600 text-sm font-bold">SECURITY STRENGTH</div>
                   <div className="flex items-center gap-2 mt-1">
-                    {/* ✅ Fixed 5-segment bar */}
-                    <div className="flex-1 h-3 bg-green-900/50 rounded overflow-hidden flex">
+                    {/* Fixed 5-segment bar */}
+                    <div className="flex-1 h-3 bg-green-900/50 rounded overflow-hidden flex min-w-0">
                       {[0, 1, 2, 3, 4].map((segment) => (
                         <motion.div
                           key={segment}
@@ -280,7 +280,7 @@ export default function PasswordStrengthUI() {
           </div>
 
           {/* Right Panel */}
-          <div className="w-1/2 bg-black/85 p-6 flex flex-col">
+          <div className="w-full md:w-1/2 bg-black/85 p-4 md:p-6 flex flex-col">
             <div className="text-green-600 text-sm font-bold mb-3">REAL-TIME LOG</div>
             
             {/* Generated Password */}
@@ -296,7 +296,7 @@ export default function PasswordStrengthUI() {
             {/* Terminal Log */}
             <div 
               ref={terminalRef}
-              className="flex-1 bg-black/60 p-3 rounded border border-green-600 overflow-y-auto text-xs space-y-1 pr-2"
+              className="flex-1 bg-black/60 p-3 rounded border border-green-600 overflow-y-auto text-xs space-y-1 pr-2 min-h-[200px] md:min-h-0"
               style={{ scrollbarWidth: 'none' }}
             >
               <style jsx>{`div::-webkit-scrollbar { width: 0px; }`}</style>
@@ -318,9 +318,13 @@ export default function PasswordStrengthUI() {
         </div>
 
         {/* Footer */}
-        <div className="bg-gray-900 border-t border-green-600 px-6 py-2">
-          <div className="text-center text-green-600 text-xs">
-            CONNECTED TO BACKEND • REAL ANALYSIS • NO DATA RETENTION
+        <div className="bg-gray-900 border-t border-green-600 px-3 md:px-6 py-2">
+          <div className="text-center text-green-600 text-[10px] md:text-xs">
+            <span className="block md:inline">CONNECTED TO BACKEND</span>
+            <span className="hidden md:inline"> • </span>
+            <span className="block md:inline">REAL ANALYSIS</span>
+            <span className="hidden md:inline"> • </span>
+            <span className="block md:inline">NO DATA RETENTION</span>
           </div>
         </div>
       </div>
